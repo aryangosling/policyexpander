@@ -28,7 +28,7 @@ type Data struct {
 
 func getPolicies() []string {
 	// Open the JSON file
-	jsonFile, err := os.Open("data.json")
+	jsonFile, err := os.Open("data/aws/iam-dataset.json")
 	if err != nil {
 		log.Fatalf("Failed to open JSON File : %v", err)
 	}
