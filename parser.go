@@ -2,9 +2,11 @@ package policyverse
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -12,6 +14,8 @@ var actionsNames []string
 
 func init() {
 	actionsNames = getPolicies()
+	// answer := expandPolicy("secretsmanager:Get*")
+	// print(answer)
 }
 
 type Action struct {
@@ -53,32 +57,21 @@ func getPolicies() []string {
 
 func expandPolicy(policy string) []string {
 	result_policy := strings.TrimSuffix(policy, "*")
-	var filteredStrings []string
+	filteredPoliciesMap := make(map[string]struct{})
 
+	fmt.Println(result_policy)
 	for _, str := range actionsNames {
 		if strings.HasPrefix(str, result_policy) {
-			filteredStrings = append(filteredStrings, str)
+			filteredPoliciesMap[str] = struct{}{}
 		}
 	}
+	var filteredPolicies []string
+	fmt.Println(len(filteredPoliciesMap))
+	for str := range filteredPoliciesMap {
+		filteredPolicies = append(filteredPolicies, str)
+	}
 
-	return filteredStrings
+	sort.Strings(filteredPolicies)
+	return filteredPolicies
 
 }
-
-// func main() {
-// 	policy := flag.String("policy", "None", "Policy to be expanded")
-
-// 	flag.Parse()
-// 	result_policy := strings.TrimSuffix(*policy, "*")
-// 	var filteredStrings []string
-
-// 	fmt.Println(result_policy)
-// 	for _, str := range actionsNames {
-// 		if strings.HasPrefix(str, result_policy) {
-// 			filteredStrings = append(filteredStrings, str)
-// 		}
-// 	}
-
-// 	fmt.Print(filteredStrings)
-
-// }
