@@ -2,8 +2,6 @@ package policyverse
 
 import (
 	"encoding/json"
-	"flag"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -53,20 +51,34 @@ func getPolicies() []string {
 
 }
 
-func main() {
-	policy := flag.String("policy", "None", "Policy to be expanded")
-
-	flag.Parse()
-	result_policy := strings.TrimSuffix(*policy, "*")
+func expandPolicy(policy string) []string {
+	result_policy := strings.TrimSuffix(policy, "*")
 	var filteredStrings []string
 
-	fmt.Println(result_policy)
 	for _, str := range actionsNames {
 		if strings.HasPrefix(str, result_policy) {
 			filteredStrings = append(filteredStrings, str)
 		}
 	}
 
-	fmt.Print(filteredStrings)
+	return filteredStrings
 
 }
+
+// func main() {
+// 	policy := flag.String("policy", "None", "Policy to be expanded")
+
+// 	flag.Parse()
+// 	result_policy := strings.TrimSuffix(*policy, "*")
+// 	var filteredStrings []string
+
+// 	fmt.Println(result_policy)
+// 	for _, str := range actionsNames {
+// 		if strings.HasPrefix(str, result_policy) {
+// 			filteredStrings = append(filteredStrings, str)
+// 		}
+// 	}
+
+// 	fmt.Print(filteredStrings)
+
+// }
