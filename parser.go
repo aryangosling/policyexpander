@@ -1,4 +1,4 @@
-package main
+package policyverse
 
 import (
 	"encoding/json"
