@@ -55,16 +55,49 @@ func getPolicies() []string {
 
 }
 
-func expandPolicy(policy string) []string {
+func _expandPolicy(policy string, filteredPoliciesMap map[string]struct{}) []string {
 	result_policy := strings.TrimSuffix(policy, "*")
-	filteredPoliciesMap := make(map[string]struct{})
-
-	fmt.Println(result_policy)
 	for _, str := range actionsNames {
+		// fmt.Println(str, policy)
 		if strings.HasPrefix(str, result_policy) {
 			filteredPoliciesMap[str] = struct{}{}
 		}
 	}
+	var filteredPolicies []string
+	fmt.Println(len(filteredPoliciesMap))
+	for str := range filteredPoliciesMap {
+		filteredPolicies = append(filteredPolicies, str)
+	}
+	sort.Strings(filteredPolicies)
+	return filteredPolicies
+}
+
+func expandPolicy(policy map[string]interface{}) []string {
+	filteredPoliciesMap := make(map[string]struct{})
+
+	if statements, ok := policy["Statement"].([]interface{}); ok {
+		for _, statement := range statements {
+			// Check if each statement is a map
+			if stmtMap, ok := statement.(map[string]interface{}); ok {
+				// Check if the "Action" key exists and is a slice
+				if actions, ok := stmtMap["Action"].([]interface{}); ok {
+					for _, action := range actions {
+						// Print each action
+
+						if actionStr, ok := action.(string); ok {
+							fmt.Println("action", actionStr)
+							if strings.HasSuffix(actionStr, "*") {
+								_expandPolicy(actionStr, filteredPoliciesMap)
+							} else {
+								filteredPoliciesMap[actionStr] = struct{}{}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	var filteredPolicies []string
 	fmt.Println(len(filteredPoliciesMap))
 	for str := range filteredPoliciesMap {

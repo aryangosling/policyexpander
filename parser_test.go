@@ -1,6 +1,9 @@
 package policyverse
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+)
 
 func TestPolicyParser(t *testing.T) {
 	expected_reponse := []string{
@@ -8,11 +11,20 @@ func TestPolicyParser(t *testing.T) {
 		"secretsmanager:GetResourcePolicy",
 		"secretsmanager:GetSecretValue",
 	}
-
-	expanded_policies := expandPolicy("secretsmanager:Get*")
+	jsonData := `{
+        "Statement": [{
+            "Action": ["secretsmanager:Get*"],
+            "Resource": "*",
+            "Effect": "Allow"
+        }]
+    }`
+	var data map[string]interface{}
+	json.Unmarshal([]byte(jsonData), &data)
+	expanded_policies := expandPolicy(data)
 
 	if len(expanded_policies) != len(expected_reponse) {
-		t.Error("Expected value doesnt match expexted response for", "secretsmanager:Get*")
+		t.Error("Expected value doesnt match expexted response for", "secretsmanager:Get*", expanded_policies)
+
 	}
 	for i := range expanded_policies {
 		if expanded_policies[i] != expected_reponse[i] {
