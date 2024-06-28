@@ -20,10 +20,10 @@ func TestPolicyParser(t *testing.T) {
     }`
 	var data map[string]interface{}
 	json.Unmarshal([]byte(jsonData), &data)
-	expanded_policies := expandPolicy(data)
+	expanded_policies := ExpandPolicy(data)
 
 	if len(expanded_policies) != len(expected_reponse) {
-		t.Error("Expected value doesnt match expexted response for", "secretsmanager:Get*", expanded_policies)
+		t.Error("Expected value doesnt match expexted response for", "secretsmanager:Get*", expanded_policies, expanded_policies)
 
 	}
 	for i := range expanded_policies {

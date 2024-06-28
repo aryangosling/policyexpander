@@ -2,10 +2,10 @@ package policyverse
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"os"
+	"reflect"
 	"sort"
 	"strings"
 )
@@ -64,15 +64,29 @@ func _expandPolicy(policy string, filteredPoliciesMap map[string]struct{}) []str
 		}
 	}
 	var filteredPolicies []string
-	fmt.Println(len(filteredPoliciesMap))
+
 	for str := range filteredPoliciesMap {
 		filteredPolicies = append(filteredPolicies, str)
 	}
+
 	sort.Strings(filteredPolicies)
 	return filteredPolicies
 }
 
-func expandPolicy(policy map[string]interface{}) []string {
+func isArray(obj interface{}) bool {
+	return reflect.TypeOf(obj).Kind() == reflect.Array || reflect.TypeOf(obj).Kind() == reflect.Slice
+}
+
+// ensureArray ensures that the given object is an array,
+// by creating a slice and adding it as a single element if it's not already an array or slice.
+func ensureArray(obj interface{}) []interface{} {
+	if isArray(obj) {
+		return obj.([]interface{})
+	}
+	return []interface{}{obj}
+}
+
+func ExpandPolicy(policy map[string]interface{}) []string {
 	filteredPoliciesMap := make(map[string]struct{})
 
 	if statements, ok := policy["Statement"].([]interface{}); ok {
@@ -80,18 +94,18 @@ func expandPolicy(policy map[string]interface{}) []string {
 			// Check if each statement is a map
 			if stmtMap, ok := statement.(map[string]interface{}); ok {
 				// Check if the "Action" key exists and is a slice
-				if actions, ok := stmtMap["Action"].([]interface{}); ok {
+				if actions, ok := stmtMap["Action"]; ok {
+					actions := ensureArray(actions)
 					for _, action := range actions {
+						action := action.(string)
 						// Print each action
 
-						if actionStr, ok := action.(string); ok {
-							fmt.Println("action", actionStr)
-							if strings.HasSuffix(actionStr, "*") {
-								_expandPolicy(actionStr, filteredPoliciesMap)
-							} else {
-								filteredPoliciesMap[actionStr] = struct{}{}
-							}
+						if strings.HasSuffix(action, "*") {
+							_expandPolicy(action, filteredPoliciesMap)
+						} else {
+							filteredPoliciesMap[action] = struct{}{}
 						}
+
 					}
 				}
 			}
@@ -99,7 +113,6 @@ func expandPolicy(policy map[string]interface{}) []string {
 	}
 
 	var filteredPolicies []string
-	fmt.Println(len(filteredPoliciesMap))
 	for str := range filteredPoliciesMap {
 		filteredPolicies = append(filteredPolicies, str)
 	}
